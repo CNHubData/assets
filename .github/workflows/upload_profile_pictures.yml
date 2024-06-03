@@ -1,41 +1,26 @@
-name: Batch Upload Profile Pictures from SharePoint
+name: Batch Upload Profile Pictures
 
 on:
   workflow_dispatch:
     inputs:
-      json_url:
-        description: 'URL of the JSON file on SharePoint'
+      images_json:
+        description: 'JSON array of images with base64 data and filenames'
         required: true
 
 jobs:
-  download-and-process-images:
+  batch-upload-images:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
         uses: actions/checkout@v2
 
-      - name: Get OAuth Token
-        id: get_token
+      - name: Decode and Save Images
         run: |
-          response=$(curl -X POST -H "Content-Type: application/x-www-form-urlencoded" \
-            -d "grant_type=client_credentials&client_id=${{ secrets.CLIENT_ID }}&client_secret=${{ secrets.CLIENT_SECRET }}&scope=https%3A%2F%2Fgraph.microsoft.com%2F.default" \
-            "https://login.microsoftonline.com/${{ secrets.TENANT_ID }}/oauth2/v2.0/token")
-          echo "::set-output name=token::$(echo $response | jq -r '.access_token')"
-
-      - name: Fetch JSON from SharePoint
-        run: |
-          curl -v -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" "${{ github.event.inputs.json_url }}" -L -o images.json
-
-
-      - name: Install jq for JSON parsing
-        run: sudo apt-get install jq
-
-      - name: Process JSON and Download Images
-        run: |
-          jq -c '.[]' images.json | while read i; do
-            img_url=$(echo $i | jq -r '.image_url')
+          mkdir -p profile_pictures
+          echo '${{ github.event.inputs.images_json }}' | jq -c '.[]' | while read i; do
+            img_data=$(echo $i | jq -r '.image_data')
             img_name=$(echo $i | jq -r '.image_name')
-            curl -L $img_url -o "./profile_pictures/$img_name"
+            echo $img_data | base64 --decode > ./profile_pictures/$img_name
           done
 
       - name: Commit and Push Images to Repository
@@ -45,6 +30,6 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add ./profile_pictures
-          git commit -m "Batch upload of profile pictures from SharePoint"
+          git commit -m "Batch upload of profile pictures"
           git remote set-url origin https://x-access-token:${ACCESS_TOKEN}@github.com/CNHubData/assets.git
           git push origin main
