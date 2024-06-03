@@ -17,17 +17,24 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
 
+      - name: Set up Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Pull latest changes
+        run: git pull origin main
+
       - name: Decode and Save Image
         run: |
-          echo "${{ github.event.inputs.image_data }}" | base64 --decode > ./profile_pictures/${{ github.event.inputs.image_name }}.jpg
+          mkdir -p profile_pictures
+          echo "${{ github.event.inputs.image_data }}" | base64 --decode > ./profile_pictures/${{ github.event.inputs.image_name }}
 
       - name: Commit and Push Image to Repository
         env:
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git remote set-url origin https://x-access-token:${ACCESS_TOKEN}@github.com/CNHubData/assets.git
           git add ./profile_pictures
           git commit -m "Upload new profile picture"
-          git push
+          git remote set-url origin https://x-access-token:${ACCESS_TOKEN}@github.com/CNHubData/assets.git
+          git push origin main
