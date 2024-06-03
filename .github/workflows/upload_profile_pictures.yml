@@ -1,35 +1,39 @@
-name: Batch Upload Profile Pictures
+name: Upload Profile Pictures
 
 on:
   workflow_dispatch:
     inputs:
-      images_json:
-        description: 'JSON array of images with base64 data and filenames'
+      image_data:
+        description: 'Base64 encoded image data'
+        required: true
+      image_name:
+        description: 'Name of the image file'
         required: true
 
 jobs:
-  batch-upload-images:
+  upload-images:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
         uses: actions/checkout@v2
 
-      - name: Decode and Save Images
-        run: |
-          mkdir -p profile_pictures
-          echo '${{ github.event.inputs.images_json }}' | jq -c '.[]' | while read i; do
-            img_data=$(echo $i | jq -r '.image_data')
-            img_name=$(echo $i | jq -r '.image_name')
-            echo $img_data | base64 --decode > ./profile_pictures/$img_name
-          done
-
-      - name: Commit and Push Images to Repository
-        env:
-          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+      - name: Set up Git
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
+
+      - name: Decode and Save Image
+        run: |
+          mkdir -p profile_pictures
+          echo "${{ github.event.inputs.image_data }}" | base64 --decode > ./profile_pictures/${{ github.event.inputs.image_name }}
+
+      - name: Commit and Push Image to Repository
+        env:
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+        run: |
           git add ./profile_pictures
-          git commit -m "Batch upload of profile pictures"
+          git commit -m "Upload new profile picture"
           git remote set-url origin https://x-access-token:${ACCESS_TOKEN}@github.com/CNHubData/assets.git
-          git push origin main
+          git fetch
+          git reset --soft origin/main
+          git push --force-with-lease origin main
