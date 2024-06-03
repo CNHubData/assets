@@ -1,0 +1,25 @@
+name: Upload Profile Pictures
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_path:
+        description: 'The path to the image file'
+        required: true
+
+jobs:
+  upload-images:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Upload Image to Repository
+        run: |
+          mkdir -p profile_pictures
+          cp ${{ github.event.inputs.image_path }} ./profile_pictures/
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add ./profile_pictures
+          git commit -m "Upload profile picture"
+          git push
