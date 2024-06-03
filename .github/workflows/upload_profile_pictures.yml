@@ -24,7 +24,8 @@ jobs:
 
       - name: Fetch JSON from SharePoint
         run: |
-          curl -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" "${{ github.event.inputs.json_url }}" -L -o images.json
+          curl -v -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" "${{ github.event.inputs.json_url }}" -L -o images.json
+
 
       - name: Install jq for JSON parsing
         run: sudo apt-get install jq
