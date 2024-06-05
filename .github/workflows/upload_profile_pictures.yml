@@ -10,43 +10,34 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
+      - name: Set up PowerShell
+        uses: actions/setup-powershell@v2
+
+      - name: Prepare Certificate
+        run: |
+          echo ${{ secrets.PFX_CERTIFICATE }} | base64 -d > ./certificate.pfx
+
       - name: Install PnP PowerShell
         run: pwsh -Command "Install-Module PnP.PowerShell -AllowClobber -Force"
 
-      - name: Decode Certificate from Base64
+      - name: Download JSON file from SharePoint
         env:
-          CERTIFICATE_BASE64: ${{ secrets.CERTIFICATE_BASE64 }}
+          CERTIFICATE_PATH: ./certificate.pfx
           CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
         run: |
-          pwsh -Command "
-          Write-Host 'Starting the decoding process...'
-          $base64 = '${{ env.CERTIFICATE_BASE64 }}'
-          Write-Host 'Base64 string length: ' + $base64.Length
-          $certPassword = ConvertTo-SecureString -String '${{ env.CERTIFICATE_PASSWORD }}' -AsPlainText -Force
-          $certBytes = [System.Convert]::FromBase64String('$base64')
-          Write-Host 'Number of bytes decoded: ' + $certBytes.Length
-          $certPath = 'certificate.pfx'
-          [System.IO.File]::WriteAllBytes($certPath, $certBytes)
-          Write-Host 'Certificate written to $certPath'"
-
-
-      - name: Download JSON file from SharePoint
-        run: |
-          pwsh -Command "
-          $tenantId = '${{ secrets.TENANT_ID }}'
-          $appId = '${{ secrets.CLIENT_ID }}'
+          $tenantId = 'a37996c3-3856-4ede-9812-4bbd17884862'
+          $appId = 'd7bcacec-6088-406d-a61a-e0d61f30c2d7'
           $siteUrl = 'https://coopernorman.sharepoint.com/sites/CN-DataInformation'
           $jsonFilePath = '/Shared Documents/other/profile-picture-blob.json'
           $localPath = 'profile-pictures' # Path in the GitHub runner
           $jsonFileName = 'profile-picture-blob.json' # Name of the file
 
-          $certPath = 'certificate.pfx'
-          $certPassword = ConvertTo-SecureString -String '${{ env.CERTIFICATE_PASSWORD }}' -AsPlainText -Force
-          $certificate = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($certPath, $certPassword)
+          $secureCertificatePassword = ConvertTo-SecureString -String $CERTIFICATE_PASSWORD -AsPlainText -Force
+          $certificate = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($CERTIFICATE_PATH, $secureCertificatePassword)
 
           Connect-PnPOnline -Url $siteUrl -ClientId $appId -Tenant $tenantId -Certificate $certificate
           Get-PnPFile -ServerRelativeUrl $jsonFilePath -Path $localPath -FileName $jsonFileName -AsFile
-          Disconnect-PnPOnline"
+          Disconnect-PnPOnline
 
       - name: Commit and Push File to Repository
         run: |
