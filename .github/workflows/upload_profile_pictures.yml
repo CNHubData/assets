@@ -1,10 +1,10 @@
-name: Download SharePoint JSON File
+name: Download and Process Images from SharePoint JSON
 
 on:
   workflow_dispatch:
 
 jobs:
-  download-json:
+  download-and-process:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -36,7 +36,7 @@ jobs:
 
           # Ensure the directory exists
           if (-not (Test-Path -Path $localPath)) {
-              New-Item -ItemType Directory -Path $localPath
+              New-Item -ItemType Directory -Path $localPath -Force
           }
 
           $certificatePath = "$PWD/certificate.pfx"
@@ -47,10 +47,25 @@ jobs:
           Get-PnPFile -ServerRelativeUrl $jsonFilePath -Path $localPath -FileName $jsonFileName -AsFile
           Disconnect-PnPOnline
 
-      - name: Commit and Push File to Repository
+      - name: Process JSON and Extract Images
+        shell: pwsh
+        run: |
+          $localPath = 'profile-pictures'
+          $jsonFilePath = "$localPath/profile-picture-blob.json"
+
+          $jsonContent = Get-Content -Path $jsonFilePath -Raw | ConvertFrom-Json
+          foreach ($item in $jsonContent) {
+              $imageName = $item.image_name
+              $imageData = $item.image_data
+              $imageBytes = [System.Convert]::FromBase64String($imageData)
+              $imagePath = "$localPath/$imageName"
+              [System.IO.File]::WriteAllBytes($imagePath, $imageBytes)
+          }
+
+      - name: Commit and Push Images to Repository
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add profile-pictures
-          git commit -m "Add downloaded JSON file"
+          git commit -m "Add extracted images from JSON"
           git push
