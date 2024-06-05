@@ -23,9 +23,7 @@ jobs:
         run: pwsh -Command "Install-Module PnP.PowerShell -AllowClobber -Force"
 
       - name: Download JSON file from SharePoint
-        env:
-          CERTIFICATE_PATH: ./certificate.pfx
-          CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+        shell: pwsh
         run: |
           $tenantId = 'a37996c3-3856-4ede-9812-4bbd17884862'
           $appId = 'd7bcacec-6088-406d-a61a-e0d61f30c2d7'
@@ -33,13 +31,14 @@ jobs:
           $jsonFilePath = '/Shared Documents/other/profile-picture-blob.json'
           $localPath = 'profile-pictures' # Path in the GitHub runner
           $jsonFileName = 'profile-picture-blob.json' # Name of the file
-
+      
           $secureCertificatePassword = ConvertTo-SecureString -String $CERTIFICATE_PASSWORD -AsPlainText -Force
           $certificate = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($CERTIFICATE_PATH, $secureCertificatePassword)
-
+      
           Connect-PnPOnline -Url $siteUrl -ClientId $appId -Tenant $tenantId -Certificate $certificate
           Get-PnPFile -ServerRelativeUrl $jsonFilePath -Path $localPath -FileName $jsonFileName -AsFile
           Disconnect-PnPOnline
+
 
       - name: Commit and Push File to Repository
         run: |
