@@ -67,11 +67,11 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add profile-pictures/*.jpg
-          git add profile-pictures/profile-picture-blob.json
+          git add profile-pictures/*.jpg profile-pictures/profile-picture-blob.json
           if [ -n "$(git status --porcelain)" ]; then
             git commit -m "Add processed images from JSON"
             git push
           else
             echo "No changes to commit"
+            exit 0
           fi
