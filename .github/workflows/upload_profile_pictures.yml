@@ -60,7 +60,7 @@ jobs:
           $length = $env:CERTIFICATE_PASSWORD.Length
           Write-Output "Password length: $length"
           
-          $certificate = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($env:$CERTIFICATE_PATH, $secureCertificatePassword)
+          $certificate = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($env:CERTIFICATE_PATH, $secureCertificatePassword)
           
           Connect-PnPOnline -Url $siteUrl -ClientId $appId -Tenant $tenantId -CertificatePath $certificate
           Get-PnPFile -ServerRelativeUrl $jsonFilePath -Path $localPath -FileName $jsonFileName -AsFile
