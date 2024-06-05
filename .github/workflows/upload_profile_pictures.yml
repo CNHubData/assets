@@ -26,7 +26,6 @@ jobs:
           [System.IO.File]::WriteAllBytes($certPath, $certBytes)
           echo 'Certificate written to $certPath'"
 
-
       - name: Download JSON file from SharePoint
         run: |
           pwsh -Command "
