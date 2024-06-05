@@ -24,6 +24,9 @@ jobs:
 
       - name: Check Secret Availability
         shell: pwsh
+        env:
+          CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+          CERTIFICATE_PATH: ./certificate.pfx
         run: |
           $nullCheck = [string]::IsNullOrEmpty($env:CERTIFICATE_PASSWORD)
           Write-Output "Is password null or empty: $nullCheck"
