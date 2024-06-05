@@ -22,6 +22,9 @@ jobs:
       - name: Install PnP PowerShell
         run: pwsh -Command "Install-Module PnP.PowerShell -AllowClobber -Force"
 
+      - name: Create .gitignore
+        run: echo 'certificate.pfx' >> .gitignore
+
       - name: Download JSON file from SharePoint
         shell: pwsh
         env:
@@ -67,6 +70,8 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
+          echo "certificate.pfx" >> .gitignore
+          git add .gitignore
           git add profile-pictures/*.jpg profile-pictures/profile-picture-blob.json
           if [ -n "$(git status --porcelain)" ]; then
             git commit -m "Add processed images from JSON"
