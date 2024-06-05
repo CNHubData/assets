@@ -23,6 +23,7 @@ jobs:
         run: pwsh -Command "Install-Module PnP.PowerShell -AllowClobber -Force"
 
       - name: Check Secret Length
+        shell: pwsh
         env:
           CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
           CERTIFICATE_PATH: ./certificate.pfx
