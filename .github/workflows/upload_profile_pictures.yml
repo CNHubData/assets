@@ -38,7 +38,7 @@ jobs:
           CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
           CERTIFICATE_PATH: ./certificate.pfx
         run: |
-          $length = $CERTIFICATE_PASSWORD.Length
+          $length = $env:CERTIFICATE_PASSWORD.Length
           Write-Output "Password length: $length"
 
 
