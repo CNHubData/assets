@@ -21,10 +21,11 @@ jobs:
           pwsh -Command "
           $base64 = '${{ env.CERTIFICATE_BASE64 }}'
           $certPassword = ConvertTo-SecureString -String '${{ env.CERTIFICATE_PASSWORD }}' -AsPlainText -Force
-          $certBytes = [Convert]::FromBase64String($base64)
+          $certBytes = [System.Convert]::FromBase64String('$base64')
           $certPath = 'certificate.pfx'
           [System.IO.File]::WriteAllBytes($certPath, $certBytes)
           echo 'Certificate written to $certPath'"
+
 
       - name: Download JSON file from SharePoint
         run: |
