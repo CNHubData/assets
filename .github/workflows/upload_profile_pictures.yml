@@ -22,6 +22,15 @@ jobs:
       - name: Install PnP PowerShell
         run: pwsh -Command "Install-Module PnP.PowerShell -AllowClobber -Force"
 
+      - name: Check Secret Length
+        env:
+          CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+          CERTIFICATE_PATH: ./certificate.pfx
+        run: |
+          $length = $CERTIFICATE_PASSWORD.Length
+          Write-Output "Password length: $length"
+
+
       - name: Download JSON file from SharePoint
         shell: pwsh
         env:
