@@ -54,18 +54,14 @@ jobs:
           $jsonFilePath = '/Shared Documents/other/profile-picture-blob.json'
           $localPath = 'profile-pictures' # Path in the GitHub runner
           $jsonFileName = 'profile-picture-blob.json' # Name of the file
-          
-          $secureCertificatePassword = ConvertTo-SecureString -String $env:CERTIFICATE_PASSWORD -AsPlainText -Force
 
-          $length = $env:CERTIFICATE_PASSWORD.Length
-          Write-Output "Password length: $length"
-          
-          $certificate = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($env:CERTIFICATE_PATH, $secureCertificatePassword)
-          
-          Connect-PnPOnline -Url $siteUrl -ClientId $appId -Tenant $tenantId -CertificatePath $certificate
+          $certificatePath = "$PWD/certificate.pfx"
+          $secureCertificatePassword = ConvertTo-SecureString -String $env:CERTIFICATE_PASSWORD -AsPlainText -Force
+          $certificate = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($certificatePath, $secureCertificatePassword)
+
+          Connect-PnPOnline -Url $siteUrl -ClientId $appId -Tenant $tenantId -CertificatePath $certificatePath -CertificatePassword $secureCertificatePassword
           Get-PnPFile -ServerRelativeUrl $jsonFilePath -Path $localPath -FileName $jsonFileName -AsFile
           Disconnect-PnPOnline
-
 
       - name: Commit and Push File to Repository
         run: |
