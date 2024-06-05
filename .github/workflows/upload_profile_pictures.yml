@@ -37,7 +37,7 @@ jobs:
           $jsonFileName = 'profile-picture-blob.json' # Name of the file
 
           $certPath = 'certificate.pfx'
-          $certPassword = ConvertTo-SecureString -String '${{ secrets.CERTIFICATE_PASSWORD }}' -AsPlainText -Force
+          $certPassword = ConvertTo-SecureString -String '${{ env.CERTIFICATE_PASSWORD }}' -AsPlainText -Force
           $certificate = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($certPath, $certPassword)
 
           Connect-PnPOnline -Url $siteUrl -ClientId $appId -Tenant $tenantId -Certificate $certificate
