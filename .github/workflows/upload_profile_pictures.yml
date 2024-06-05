@@ -1,10 +1,10 @@
-name: Download and Process Images from SharePoint JSON
+name: Process and Upload Images from JSON
 
 on:
   workflow_dispatch:
 
 jobs:
-  download-and-process:
+  process-and-upload-images:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -13,7 +13,7 @@ jobs:
       - name: Set up PowerShell
         uses: actions/setup-dotnet@v2
         with:
-          dotnet-version: '3.1.x'  # Specify a .NET version that includes PowerShell
+          dotnet-version: '3.1.x'
 
       - name: Prepare Certificate
         run: |
@@ -26,6 +26,7 @@ jobs:
         shell: pwsh
         env:
           CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+          CERTIFICATE_PATH: ./certificate.pfx
         run: |
           $tenantId = 'a37996c3-3856-4ede-9812-4bbd17884862'
           $appId = 'd7bcacec-6088-406d-a61a-e0d61f30c2d7'
@@ -47,25 +48,23 @@ jobs:
           Get-PnPFile -ServerRelativeUrl $jsonFilePath -Path $localPath -FileName $jsonFileName -AsFile
           Disconnect-PnPOnline
 
-      - name: Process JSON and Extract Images
+      - name: Process JSON and Save Images
         shell: pwsh
         run: |
-          $localPath = 'profile-pictures'
-          $jsonFilePath = "$localPath/profile-picture-blob.json"
-
-          $jsonContent = Get-Content -Path $jsonFilePath -Raw | ConvertFrom-Json
-          foreach ($item in $jsonContent) {
-              $imageName = $item.image_name
-              $imageData = $item.image_data
-              $imageBytes = [System.Convert]::FromBase64String($imageData)
-              $imagePath = Join-Path -Path $localPath -ChildPath $imageName
-              [System.IO.File]::WriteAllBytes($imagePath, $imageBytes)
+          $jsonFile = "profile-pictures/profile-picture-blob.json"
+          $jsonContent = Get-Content -Path $jsonFile -Raw | ConvertFrom-Json
+          foreach ($entry in $jsonContent) {
+              $imageData = $entry.inputs.image_data
+              $imageName = $entry.inputs.image_name
+              $imagePath = "profile-pictures/$imageName"
+              $imageDataBytes = [System.Convert]::FromBase64String($imageData)
+              [System.IO.File]::WriteAllBytes($imagePath, $imageDataBytes)
           }
 
       - name: Commit and Push Images to Repository
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add profile-pictures
-          git commit -m "Add extracted images from JSON"
+          git add profile-pictures/*.jpg
+          git commit -m "Add processed images from JSON"
           git push
