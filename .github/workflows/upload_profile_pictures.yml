@@ -26,10 +26,12 @@ jobs:
         shell: pwsh
         env:
           CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+          TENANT_ID: ${{ secrets.TENANT_ID }}
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
           CERTIFICATE_PATH: ./certificate.pfx
         run: |
-          $tenantId = 'a37996c3-3856-4ede-9812-4bbd17884862'
-          $appId = 'd7bcacec-6088-406d-a61a-e0d61f30c2d7'
+          $tenantId = $env:TENANT_ID
+          $appId = $env:CLIENT_ID
           $siteUrl = 'https://coopernorman.sharepoint.com/sites/CN-DataInformation'
           $jsonFilePath = '/Shared Documents/other/profile-picture-blob.json'
           $localPath = 'profile-pictures' # Path in the GitHub runner
