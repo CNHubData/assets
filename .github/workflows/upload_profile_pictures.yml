@@ -55,8 +55,8 @@ jobs:
           $localPath = 'profile-pictures' # Path in the GitHub runner
           $jsonFileName = 'profile-picture-blob.json' # Name of the file
           
-          $secureCertificatePassword = ConvertTo-SecureString -String $CERTIFICATE_PASSWORD -AsPlainText -Force
-          $certificate = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($CERTIFICATE_PATH, $secureCertificatePassword)
+          $secureCertificatePassword = ConvertTo-SecureString -String $env:CERTIFICATE_PASSWORD -AsPlainText -Force
+          $certificate = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($env:CERTIFICATE_PATH, $secureCertificatePassword)
           
           Connect-PnPOnline -Url $siteUrl -ClientId $appId -Tenant $tenantId -Certificate $certificate
           Get-PnPFile -ServerRelativeUrl $jsonFilePath -Path $localPath -FileName $jsonFileName -AsFile
