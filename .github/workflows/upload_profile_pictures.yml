@@ -46,6 +46,7 @@ jobs:
         shell: pwsh
         env:
           CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+          CERTIFICATE_PATH: ./certificate.pfx
         run: |
           $tenantId = 'a37996c3-3856-4ede-9812-4bbd17884862'
           $appId = 'd7bcacec-6088-406d-a61a-e0d61f30c2d7'
@@ -53,12 +54,15 @@ jobs:
           $jsonFilePath = '/Shared Documents/other/profile-picture-blob.json'
           $localPath = 'profile-pictures' # Path in the GitHub runner
           $jsonFileName = 'profile-picture-blob.json' # Name of the file
-
-          $certificatePath = "$PWD/certificate.pfx"
+          
           $secureCertificatePassword = ConvertTo-SecureString -String $env:CERTIFICATE_PASSWORD -AsPlainText -Force
-          $certificate = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($certificatePath, $secureCertificatePassword)
 
-          Connect-PnPOnline -Url $siteUrl -ClientId $appId -Tenant $tenantId -CertificatePath $certificatePath
+          $length = $env:CERTIFICATE_PASSWORD.Length
+          Write-Output "Password length: $length"
+          
+          $certificate = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($env:$CERTIFICATE_PATH, $secureCertificatePassword)
+          
+          Connect-PnPOnline -Url $siteUrl -ClientId $appId -Tenant $tenantId -CertificatePath $certificate
           Get-PnPFile -ServerRelativeUrl $jsonFilePath -Path $localPath -FileName $jsonFileName -AsFile
           Disconnect-PnPOnline
 
