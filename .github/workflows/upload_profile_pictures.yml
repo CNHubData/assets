@@ -19,12 +19,16 @@ jobs:
           CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
         run: |
           pwsh -Command "
+          Write-Host 'Starting the decoding process...'
           $base64 = '${{ env.CERTIFICATE_BASE64 }}'
+          Write-Host 'Base64 string length: ' + $base64.Length
           $certPassword = ConvertTo-SecureString -String '${{ env.CERTIFICATE_PASSWORD }}' -AsPlainText -Force
           $certBytes = [System.Convert]::FromBase64String('$base64')
+          Write-Host 'Number of bytes decoded: ' + $certBytes.Length
           $certPath = 'certificate.pfx'
           [System.IO.File]::WriteAllBytes($certPath, $certBytes)
-          echo 'Certificate written to $certPath'"
+          Write-Host 'Certificate written to $certPath'"
+
 
       - name: Download JSON file from SharePoint
         run: |
