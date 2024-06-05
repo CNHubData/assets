@@ -58,7 +58,7 @@ jobs:
           $secureCertificatePassword = ConvertTo-SecureString -String $env:CERTIFICATE_PASSWORD -AsPlainText -Force
           $certificate = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($env:CERTIFICATE_PATH, $secureCertificatePassword)
           
-          Connect-PnPOnline -Url $siteUrl -ClientId $appId -Tenant $tenantId -Certificate $certificate
+          Connect-PnPOnline -Url $siteUrl -ClientId $appId -Tenant $tenantId -CertificatePath $env:CERTIFICATE_PATH
           Get-PnPFile -ServerRelativeUrl $jsonFilePath -Path $localPath -FileName $jsonFileName -AsFile
           Disconnect-PnPOnline
 
