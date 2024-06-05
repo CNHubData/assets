@@ -58,8 +58,8 @@ jobs:
               $imageName = $item.image_name
               $imageData = $item.image_data
               $imageBytes = [System.Convert]::FromBase64String($imageData)
-              $imagePath = "$localPath/$imageName"
-              [System.IO.File]::WriteAllBytes($imagePath, $imageBytes)
+              $imagePath = Join-Path -Path $localPath -ChildPath $imageName
+              Set-Content -Path $imagePath -Value $imageBytes -Encoding Byte
           }
 
       - name: Commit and Push Images to Repository
