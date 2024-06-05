@@ -10,8 +10,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Set up PowerShell
-        uses: actions/setup-powershell@v2
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '3.1.x'  # Specify a .NET version that includes PowerShell
 
       - name: Prepare Certificate
         run: |
