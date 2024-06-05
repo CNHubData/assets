@@ -10,9 +10,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Set up PowerShell
-        uses: actions/setup-powershell@v2
-
       - name: Install PnP PowerShell
         run: pwsh -Command "Install-Module PnP.PowerShell -AllowClobber -Force"
 
@@ -21,15 +18,17 @@ jobs:
           CERTIFICATE_BASE64: ${{ secrets.CERTIFICATE_BASE64 }}
           CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
         run: |
-          $base64 = "${{ env.CERTIFICATE_BASE64 }}"
-          $certPassword = ConvertTo-SecureString -String "${{ env.CERTIFICATE_PASSWORD }}" -AsPlainText -Force
+          pwsh -Command "
+          $base64 = '${{ env.CERTIFICATE_BASE64 }}'
+          $certPassword = ConvertTo-SecureString -String '${{ env.CERTIFICATE_PASSWORD }}' -AsPlainText -Force
           $certBytes = [Convert]::FromBase64String($base64)
-          $certPath = "certificate.pfx"
+          $certPath = 'certificate.pfx'
           [System.IO.File]::WriteAllBytes($certPath, $certBytes)
-          echo "Certificate written to $certPath"
+          echo 'Certificate written to $certPath'"
 
       - name: Download JSON file from SharePoint
         run: |
+          pwsh -Command "
           $tenantId = '${{ secrets.TENANT_ID }}'
           $appId = '${{ secrets.CLIENT_ID }}'
           $siteUrl = 'https://coopernorman.sharepoint.com/sites/CN-DataInformation'
@@ -37,13 +36,13 @@ jobs:
           $localPath = 'profile-pictures' # Path in the GitHub runner
           $jsonFileName = 'profile-picture-blob.json' # Name of the file
 
-          $certPath = "certificate.pfx"
-          $certPassword = ConvertTo-SecureString -String "${{ secrets.CERTIFICATE_PASSWORD }}" -AsPlainText -Force
+          $certPath = 'certificate.pfx'
+          $certPassword = ConvertTo-SecureString -String '${{ secrets.CERTIFICATE_PASSWORD }}' -AsPlainText -Force
           $certificate = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($certPath, $certPassword)
 
           Connect-PnPOnline -Url $siteUrl -ClientId $appId -Tenant $tenantId -Certificate $certificate
           Get-PnPFile -ServerRelativeUrl $jsonFilePath -Path $localPath -FileName $jsonFileName -AsFile
-          Disconnect-PnPOnline
+          Disconnect-PnPOnline"
 
       - name: Commit and Push File to Repository
         run: |
